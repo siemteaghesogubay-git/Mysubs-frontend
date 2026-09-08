@@ -11,6 +11,7 @@ interface AuthContextValue {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  updateUser: (patch: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -69,16 +70,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
-    apiClient.post("/api/auth/logout").catch(() => {});
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    const currentRefreshToken = stored
+      ? (JSON.parse(stored) as StoredAuth).tokens.refreshToken
+      : null;
+    if (currentRefreshToken) {
+      apiClient.post("/api/auth/logout", { refreshToken: currentRefreshToken }).catch(() => {});
+    }
     setAuthTokens(null);
     setUser(null);
     sessionStorage.removeItem(STORAGE_KEY);
   }
 
+  function updateUser(patch: Partial<AuthUser>) {
+    setUser((current) => {
+      if (!current) return current;
+      const updated = { ...current, ...patch };
+
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: StoredAuth = JSON.parse(stored);
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, user: updated }));
+      }
+
+      return updated;
+    });
+  }
+
   const isAdmin = user?.roles.includes("ADMIN") ?? false;
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAdmin, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAdmin, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,10 +2,11 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   CreditCard,
-  LayoutGrid,
+  Tags,
   Clock,
   Users,
   User,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -13,7 +14,7 @@ import { useAuth } from "../../contexts/AuthContext";
 const navItems = [
   { label: "Översikt", href: "/", icon: LayoutDashboard },
   { label: "Prenumerationer", href: "/subscriptions", icon: CreditCard },
-  { label: "Kategorier", href: "/categories", icon: LayoutGrid },
+  { label: "Kategorier", href: "/categories", icon: Tags },
   { label: "Kommande betalningar", href: "/upcoming", icon: Clock },
   { label: "Familjegrupper", href: "/family", icon: Users },
   { label: "Profil", href: "/profile", icon: User },
@@ -80,7 +81,7 @@ export function Layout() {
                 }`
               }
             >
-              <Users size={16} />
+              <ShieldCheck size={16} />
               Användare
             </NavLink>
           </>

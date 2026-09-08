@@ -3,6 +3,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, AdminRoute } from "./routes/ProtectedRoute";
 import { Layout } from "./components/layout/layout";
 import { Login } from "./pages/Login/Login";
+import { ForgotPassword } from "./pages/ForgotPassword/ForgotPassword";
+import { ResetPassword } from "./pages/ForgotPassword/ResetPassword";
 import { Register } from "./pages/Register/Register";
 import { Dashboard } from "./pages/Dashboard/Dashboard";
 import { Subscriptions } from "./pages/Subscriptions/Subscriptions";
@@ -18,6 +20,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>

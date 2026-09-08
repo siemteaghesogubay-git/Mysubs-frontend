@@ -6,7 +6,14 @@ import { useAuth } from "../../contexts/AuthContext";
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phoneNumber: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -17,6 +24,12 @@ export function Register() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (form.password !== form.confirmPassword) {
+      setError("Lösenorden matchar inte.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await register(form);
@@ -75,12 +88,30 @@ export function Register() {
             className="mb-4 w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] outline-none focus:border-primary"
           />
 
+          <label className="mb-1 block text-[12px] font-medium text-text-secondary">Telefon (valfritt)</label>
+          <input
+            type="tel"
+            value={form.phoneNumber}
+            onChange={(e) => update("phoneNumber", e.target.value)}
+            placeholder="070-123 45 67"
+            className="mb-4 w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] outline-none focus:border-primary"
+          />
+
           <label className="mb-1 block text-[12px] font-medium text-text-secondary">Lösenord</label>
           <input
             type="password"
             required
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
+            className="mb-4 w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] outline-none focus:border-primary"
+          />
+
+          <label className="mb-1 block text-[12px] font-medium text-text-secondary">Bekräfta lösenord</label>
+          <input
+            type="password"
+            required
+            value={form.confirmPassword}
+            onChange={(e) => update("confirmPassword", e.target.value)}
             className="mb-5 w-full rounded-md border border-border bg-white px-3 py-2 text-[13px] outline-none focus:border-primary"
           />
 
