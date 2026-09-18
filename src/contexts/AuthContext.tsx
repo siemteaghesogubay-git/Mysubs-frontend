@@ -1,7 +1,20 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+
 import { apiClient, setAuthTokens } from "../api/client";
+
 import type {
-  AuthTokens, AuthUser, LoginRequest, LoginResponse, ProfileResponse, RegisterRequest,
+  AuthTokens,
+  AuthUser,
+  LoginRequest,
+  LoginResponse,
+  ProfileResponse,
+  RegisterRequest,
 } from "../types/auth";
 
 interface AuthContextValue {
@@ -14,12 +27,54 @@ interface AuthContextValue {
   updateUser: (patch: Partial<AuthUser>) => void;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-const STORAGE_KEY = "mysubs.auth";
-
 interface StoredAuth {
   tokens: AuthTokens;
   user: AuthUser;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const STORAGE_KEY = "mysubs.auth";
+
+function normalizeRoles(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(
+    (role): role is string => typeof role === "string"
+  );
+}
+
+function readStoredAuth(): StoredAuth | null {
+  try {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as StoredAuth | null;
+
+    if (
+      !parsed ||
+      !parsed.user ||
+      typeof parsed.user !== "object" ||
+      !parsed.tokens ||
+      typeof parsed.tokens.token !== "string" ||
+      !parsed.tokens.token ||
+      typeof parsed.tokens.refreshToken !== "string" ||
+      !parsed.tokens.refreshToken
+    ) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+
+    return {
+      tokens: parsed.tokens,
+      user: {
+        ...parsed.user,
+        roles: normalizeRoles(parsed.user.roles),
+      },
+    };
+  } catch {
+    sessionStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -27,87 +82,154 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
+    const stored = readStoredAuth();
+
     if (stored) {
-      const parsed: StoredAuth = JSON.parse(stored);
-      setAuthTokens(parsed.tokens);
-      setUser(parsed.user);
+      setAuthTokens(stored.tokens);
+      setUser(stored.user);
+    } else {
+      setAuthTokens(null);
+      setUser(null);
     }
+
     setIsLoading(false);
 
-    const handleForcedLogout = () => logout();
+    // Klienten skickar denna händelse om tokenförnyelsen misslyckas.
+    const handleForcedLogout = () => {
+      setAuthTokens(null);
+      setUser(null);
+      sessionStorage.removeItem(STORAGE_KEY);
+    };
+
     window.addEventListener("auth:logout", handleForcedLogout);
-    return () => window.removeEventListener("auth:logout", handleForcedLogout);
+
+    return () => {
+      window.removeEventListener("auth:logout", handleForcedLogout);
+    };
   }, []);
 
   async function establishSession(loginData: LoginResponse) {
     setAuthTokens(loginData);
-    const { data: profile } = await apiClient.get<ProfileResponse>("/api/Users/me");
 
-    const fullUser: AuthUser = {
-      id: profile.id,
-      email: profile.email,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      roles: profile.roles,
-    };
+    try {
+      const { data: profile } =
+        await apiClient.get<ProfileResponse>("/api/Users/me");
 
-    setUser(fullUser);
-    sessionStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ tokens: { token: loginData.token, refreshToken: loginData.refreshToken }, user: fullUser })
-    );
+      const fullUser: AuthUser = {
+        id: profile.id,
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        roles: normalizeRoles(profile.roles),
+      };
+
+      const storedAuth: StoredAuth = {
+        tokens: {
+          token: loginData.token,
+          refreshToken: loginData.refreshToken,
+        },
+        user: fullUser,
+      };
+
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(storedAuth));
+      setUser(fullUser);
+    } catch (error) {
+      setAuthTokens(null);
+      setUser(null);
+      sessionStorage.removeItem(STORAGE_KEY);
+
+      throw error;
+    }
   }
 
   async function login(data: LoginRequest) {
-    const res = await apiClient.post<LoginResponse>("/api/auth/login", data);
-    await establishSession(res.data);
+    const response = await apiClient.post<LoginResponse>(
+      "/api/auth/login",
+      data
+    );
+
+    await establishSession(response.data);
   }
 
   async function register(data: RegisterRequest) {
-    const res = await apiClient.post<LoginResponse>("/api/auth/register", data);
-    await establishSession(res.data);
+    const response = await apiClient.post<LoginResponse>(
+      "/api/auth/register",
+      data
+    );
+
+    await establishSession(response.data);
   }
 
   function logout() {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    const currentRefreshToken = stored
-      ? (JSON.parse(stored) as StoredAuth).tokens.refreshToken
-      : null;
+    const stored = readStoredAuth();
+    const currentRefreshToken = stored?.tokens.refreshToken;
+
     if (currentRefreshToken) {
-      apiClient.post("/api/auth/logout", { refreshToken: currentRefreshToken }).catch(() => {});
+      void apiClient
+        .post("/api/auth/logout", {
+          refreshToken: currentRefreshToken,
+        })
+        .catch(() => {
+          // Lokal utloggning genomförs även om anropet misslyckas.
+        });
     }
+
     setAuthTokens(null);
     setUser(null);
     sessionStorage.removeItem(STORAGE_KEY);
   }
 
   function updateUser(patch: Partial<AuthUser>) {
-    setUser((current) => {
-      if (!current) return current;
-      const updated = { ...current, ...patch };
+    if (!user) return;
 
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed: StoredAuth = JSON.parse(stored);
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, user: updated }));
-      }
+    const updated: AuthUser = {
+      ...user,
+      ...patch,
+      roles: normalizeRoles(
+        patch.roles === undefined ? user.roles : patch.roles
+      ),
+    };
 
-      return updated;
-    });
+    const stored = readStoredAuth();
+
+    if (stored) {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          ...stored,
+          user: updated,
+        })
+      );
+    }
+
+    setUser(updated);
   }
 
-  const isAdmin = user?.roles.includes("ADMIN") ?? false;
+  const isAdmin = user?.roles?.includes("ADMIN") ?? false;
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAdmin, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isAdmin,
+        login,
+        register,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth måste användas inom AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth måste användas inom AuthProvider");
+  }
+
+  return context;
 }
