@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,6 +9,8 @@ import {
   User,
   ShieldCheck,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -24,114 +27,188 @@ function initials(firstName?: string, lastName?: string) {
   return `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase();
 }
 
+function navLinkClass({ isActive }: { isActive: boolean }) {
+  return [
+    "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2",
+    "text-sm transition-colors",
+    "focus-visible:outline-2 focus-visible:outline-offset-2",
+    "focus-visible:outline-white",
+    isActive
+      ? "bg-sidebar-active text-sidebar-text-active"
+      : "text-sidebar-text hover:bg-sidebar-active/60 hover:text-sidebar-text-active",
+  ].join(" ");
+}
+
 export function Layout() {
   const { user, isAdmin, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const roleLabel = isAdmin ? "Admin" : "User";
 
+  function closeMenu() {
+    setMenuOpen(false);
+  }
+
+  function handleLogout() {
+    closeMenu();
+    logout();
+  }
+
   return (
-    <div className="grid min-h-screen grid-cols-[240px_1fr] bg-background">
-      <aside className="flex flex-col bg-sidebar-bg px-3 py-5">
-        {/* Logo */}
-        <div className="mb-6 flex items-center gap-2 px-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-            <CreditCard size={15} className="text-white" />
-          </div>
+    <div className="min-h-dvh bg-background lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:not-sr-only focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-primary"
+      >
+        Hoppa till innehållet
+      </a>
 
-          <span className="text-[15px] font-semibold text-white">
-            MySubs
+      {/* Mobilheader */}
+      <header className="flex min-h-16 items-center justify-between gap-3 bg-sidebar-bg px-4 py-2 lg:hidden">
+        <NavLink
+          to="/"
+          onClick={closeMenu}
+          aria-label="MySubs – till översikten"
+          className="flex min-h-11 items-center gap-2 rounded-md text-white focus-visible:outline-2 focus-visible:outline-white"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <CreditCard size={18} aria-hidden="true" />
           </span>
-        </div>
+          <span className="text-base font-semibold">MySubs</span>
+        </NavLink>
 
-        {/* Navigation */}
-        <nav className="flex flex-col gap-1">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-controls="main-sidebar"
+          aria-label={menuOpen ? "Stäng meny" : "Öppna meny"}
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-white hover:bg-sidebar-active focus-visible:outline-2 focus-visible:outline-white"
+        >
+          {menuOpen ? (
+            <X size={24} aria-hidden="true" />
+          ) : (
+            <Menu size={24} aria-hidden="true" />
+          )}
+        </button>
+      </header>
+
+      {/* Utfällbar mobilmeny och permanent sidomeny på desktop */}
+      <aside
+        id="main-sidebar"
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && menuOpen) {
+            closeMenu();
+            document
+              .querySelector<HTMLButtonElement>(
+                'button[aria-controls="main-sidebar"]'
+              )
+              ?.focus();
+          }
+        }}
+        className={[
+          menuOpen ? "flex" : "hidden",
+          "min-w-0 flex-col gap-5 bg-sidebar-bg px-3 py-4",
+          "lg:sticky lg:top-0 lg:flex lg:h-dvh lg:overflow-y-auto lg:py-5",
+        ].join(" ")}
+      >
+        {/* Desktoplogo */}
+        <NavLink
+          to="/"
+          aria-label="MySubs – till översikten"
+          className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-white focus-visible:outline-2 focus-visible:outline-white lg:flex"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <CreditCard size={18} aria-hidden="true" />
+          </span>
+          <span className="text-base font-semibold">MySubs</span>
+        </NavLink>
+
+        <nav aria-label="Huvudnavigation" className="flex flex-col gap-1">
           {navItems.map(({ label, href, icon: Icon }) => (
             <NavLink
               key={href}
               to={href}
               end={href === "/"}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
-                  isActive
-                    ? "bg-sidebar-active text-sidebar-text-active"
-                    : "text-sidebar-text hover:bg-sidebar-active/60 hover:text-sidebar-text-active"
-                }`
-              }
+              onClick={closeMenu}
+              className={navLinkClass}
             >
-              <Icon size={16} />
-              {label}
+              <Icon size={18} className="shrink-0" aria-hidden="true" />
+              <span>{label}</span>
             </NavLink>
           ))}
+
+          {isAdmin && (
+            <>
+              <div className="mb-1 mt-5 px-3 text-xs font-medium tracking-wide text-sidebar-text">
+                ADMIN
+              </div>
+
+              <NavLink
+                to="/admin/users"
+                onClick={closeMenu}
+                className={navLinkClass}
+              >
+                <ShieldCheck
+                  size={18}
+                  className="shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Användare</span>
+              </NavLink>
+            </>
+          )}
         </nav>
 
-        {/* Admin navigation */}
-        {isAdmin && (
-          <>
-            <div className="mb-2 mt-6 px-3 text-[11px] font-medium tracking-wide text-sidebar-text/60">
-              ADMIN
-            </div>
-
-            <NavLink
-              to="/admin/users"
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
-                  isActive
-                    ? "bg-sidebar-active text-sidebar-text-active"
-                    : "text-sidebar-text hover:bg-sidebar-active/60 hover:text-sidebar-text-active"
-                }`
-              }
-            >
-              <ShieldCheck size={16} />
-              Användare
-            </NavLink>
-          </>
-        )}
-
         {/* Inloggad användare */}
-        <div className="mt-auto flex items-center gap-2.5 rounded-lg bg-sidebar-active/50 p-2.5">
-          {/* Initialer */}
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-medium text-white">
-            {initials(user?.firstName, user?.lastName)}
-          </div>
+        <div className="mt-auto rounded-lg bg-sidebar-active/50 p-3">
+          <div className="flex items-center gap-3">
+            <div
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-white"
+            >
+              {initials(user?.firstName, user?.lastName)}
+            </div>
 
-          {/* Namn + roll */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className="truncate text-[12px] font-medium text-white">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-white">
                 {user?.firstName} {user?.lastName}
-              </span>
-
-              <span
-                className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                  isAdmin
-                    ? "bg-primary/20 text-primary-soft"
-                    : "bg-white/10 text-sidebar-text-active"
-                }`}
-              >
-                {roleLabel}
-              </span>
-            </div>
-
-            <div className="truncate text-[11px] text-sidebar-text">
-              {user?.email}
+              </div>
+              <div className="break-all text-xs text-sidebar-text">
+                {user?.email}
+              </div>
             </div>
           </div>
 
-          {/* Logga ut */}
-          <button
-            type="button"
-            onClick={logout}
-            aria-label="Logga ut"
-            title="Logga ut"
-            className="shrink-0 rounded-md p-1.5 text-sidebar-text transition-colors hover:bg-sidebar-active hover:text-white"
-          >
-            <LogOut size={15} />
-          </button>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <span
+              className={`rounded px-2 py-1 text-xs font-medium ${
+                isAdmin
+                  ? "bg-primary/20 text-primary-soft"
+                  : "bg-white/10 text-sidebar-text-active"
+              }`}
+            >
+              {roleLabel}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-sm text-sidebar-text hover:bg-sidebar-active hover:text-white focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <LogOut size={18} aria-hidden="true" />
+              Logga ut
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Sidinnehåll */}
-      <main className="overflow-y-auto p-6">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="min-w-0 p-4 sm:p-6 lg:p-8"
+      >
         <Outlet />
       </main>
     </div>
