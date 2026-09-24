@@ -13,12 +13,11 @@ export interface UpdateProfileRequest {
   phoneNumber?: string | null;
 }
 
-
-
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
+
 export interface ForgotPasswordRequest {
   email: string;
 }
@@ -27,4 +26,5 @@ export interface ResetPasswordRequest {
   email: string;
   token: string;
   newPassword: string;
+  confirmNewPassword: string;
 }

@@ -1,11 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { CreditCard } from "lucide-react";
 import { resetPassword } from "../../api/auth";
 
 export function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [token, setToken] = useState(searchParams.get("token") ?? "");
@@ -28,14 +27,12 @@ export function ResetPassword() {
     }
 
     setIsSubmitting(true);
-    try {
-      await resetPassword({ email, token, newPassword });
-      navigate("/login", { replace: true, state: { resetSuccess: true } });
-    } catch {
-      setError("Kunde inte återställa lösenordet. Länken kan ha gått ut — begär en ny.");
-    } finally {
-      setIsSubmitting(false);
-    }
+  await resetPassword({
+  email,
+  token,
+  newPassword,
+  confirmNewPassword: confirmPassword,
+});
   }
 
   return (

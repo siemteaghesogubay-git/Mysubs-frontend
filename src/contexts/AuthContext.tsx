@@ -21,12 +21,18 @@ import type {
   RegisterRequest,
 } from "../types/auth";
 
+export interface RegisterResponse {
+  message: string;
+  requiresEmailVerification: true;
+  email: string;
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAdmin: boolean;
   login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<RegisterResponse>;
   logout: () => void;
   updateUser: (patch: Partial<AuthUser>) => void;
 }
@@ -39,10 +45,10 @@ interface StoredAuth {
 const STORAGE_KEY = "mysubs.auth";
 
 const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined
+  undefined,
 );
 
-
+// Separat klient utan automatisk tokenförnyelse för autentiseringsanrop.
 const sessionClient = axios.create({
   baseURL: apiClient.defaults.baseURL,
   timeout: 30_000,
@@ -56,7 +62,7 @@ function normalizeRoles(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
 
   return value.filter(
-    (role): role is string => typeof role === "string"
+    (role): role is string => typeof role === "string",
   );
 }
 
@@ -67,6 +73,16 @@ function isAuthTokens(value: unknown): value is AuthTokens {
     value.token.length > 0 &&
     typeof value.refreshToken === "string" &&
     value.refreshToken.length > 0
+  );
+}
+
+function isRegisterResponse(value: unknown): value is RegisterResponse {
+  return (
+    isRecord(value) &&
+    typeof value.message === "string" &&
+    value.requiresEmailVerification === true &&
+    typeof value.email === "string" &&
+    value.email.trim().length > 0
   );
 }
 
@@ -96,13 +112,14 @@ function removeStoredAuth() {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
   } catch {
-    
+    // Sessionen rensas fortfarande i minnet om lagringen är blockerad.
   }
 }
 
 function readStoredAuth(): StoredAuth | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
+
     if (!raw) return null;
 
     const parsed: unknown = JSON.parse(raw);
@@ -112,9 +129,9 @@ function readStoredAuth(): StoredAuth | null {
       return null;
     }
 
-    const user = parseUser(parsed.user);
+    const storedUser = parseUser(parsed.user);
 
-    if (!user) {
+    if (!storedUser) {
       removeStoredAuth();
       return null;
     }
@@ -124,7 +141,7 @@ function readStoredAuth(): StoredAuth | null {
         token: parsed.tokens.token,
         refreshToken: parsed.tokens.refreshToken,
       },
-      user,
+      user: storedUser,
     };
   } catch {
     removeStoredAuth();
@@ -137,7 +154,7 @@ function writeStoredAuth(session: StoredAuth) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   } catch {
     throw new Error(
-      "Sessionen kunde inte sparas. Kontrollera webbläsarens lagringsinställningar."
+      "Sessionen kunde inte sparas. Kontrollera webbläsarens lagringsinställningar.",
     );
   }
 }
@@ -150,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const userRef = useRef<AuthUser | null>(null);
 
-  // Hindrar gamla inloggningsanrop från att återställa en avslutad session.
+  // Hindrar äldre anrop från att återställa en avslutad session.
   const authAttempt = useRef(0);
 
   const clearSession = useCallback(() => {
@@ -161,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     removeStoredAuth();
 
-    // Avbryt frågor och ta bort cachad data från föregående användare.
+    // Ta bort cachad data från föregående användare.
     void queryClient.cancelQueries();
     queryClient.clear();
   }, [queryClient]);
@@ -188,25 +205,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function establishSession(
     loginData: LoginResponse,
-    attempt: number
+    attempt: number,
   ) {
     if (attempt !== authAttempt.current) {
       throw new Error("Inloggningsförsöket är inte längre aktivt.");
     }
 
     if (!isAuthTokens(loginData)) {
-      throw new Error("Servern returnerade ogiltiga inloggningsuppgifter.");
+      throw new Error(
+        "Servern returnerade ogiltiga inloggningsuppgifter.",
+      );
     }
 
-    // Läs profilen med token från just detta inloggningsförsök.
-    // Den nya sessionen aktiveras först när profilen har hämtats.
+    // Använd token från just detta inloggningsförsök.
     const { data: profile } = await sessionClient.get<ProfileResponse>(
       "/api/Users/me",
       {
         headers: {
           Authorization: `Bearer ${loginData.token}`,
         },
-      }
+      },
     );
 
     if (attempt !== authAttempt.current) {
@@ -216,7 +234,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const fullUser = parseUser(profile);
 
     if (!fullUser) {
-      throw new Error("Servern returnerade en ogiltig användarprofil.");
+      throw new Error(
+        "Servern returnerade en ogiltig användarprofil.",
+      );
     }
 
     const session: StoredAuth = {
@@ -227,6 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: fullUser,
     };
 
+    // Aktivera sessionen först när profilen har hämtats.
     writeStoredAuth(session);
 
     setAuthTokens(session.tokens);
@@ -234,17 +255,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(fullUser);
   }
 
-  async function authenticate(
-    path: string,
-    payload: LoginRequest | RegisterRequest
-  ) {
+  async function login(payload: LoginRequest): Promise<void> {
     clearSession();
     const attempt = authAttempt.current;
 
     try {
       const { data } = await sessionClient.post<LoginResponse>(
-        path,
-        payload
+        "/api/auth/login",
+        payload,
       );
 
       await establishSession(data, attempt);
@@ -254,44 +272,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearSession();
       }
 
+      // Behåll Axios-felet så Login-sidan kan hantera
+      // bland annat HTTP 403 med koden EmailNotConfirmed.
       throw error;
     }
   }
 
-  async function login(data: LoginRequest) {
-    await authenticate("/api/auth/login", data);
-  }
+  async function register(
+    payload: RegisterRequest,
+  ): Promise<RegisterResponse> {
+    clearSession();
+    const attempt = authAttempt.current;
 
-  async function register(data: RegisterRequest) {
-    await authenticate("/api/auth/register", data);
+    try {
+      const { data } = await sessionClient.post<unknown>(
+        "/api/auth/register",
+        payload,
+      );
+
+      if (attempt !== authAttempt.current) {
+        throw new Error("Registreringsförsöket har avbrutits.");
+      }
+
+      if (!isRegisterResponse(data)) {
+        throw new Error(
+          "Servern returnerade ett oväntat registreringssvar.",
+        );
+      }
+
+      // Registrering skapar ingen inloggad session.
+      // Register-sidan använder svaret för att öppna verifieringssidan.
+      return data;
+    } catch (error) {
+      if (attempt === authAttempt.current) {
+        clearSession();
+      }
+
+      // Behåll även VerificationEmailFailed-svaret:
+      // kontot kan ha skapats trots att mejlutskicket misslyckades.
+      throw error;
+    }
   }
 
   function logout() {
-    // client.ts uppdaterar dessa token efter en lyckad förnyelse.
+    // client.ts uppdaterar lagrade tokens efter en lyckad förnyelse.
     const stored = readStoredAuth();
 
     clearSession();
 
     if (!stored) return;
 
-  
     void sessionClient
       .post(
         "/api/auth/logout",
-        { refreshToken: stored.tokens.refreshToken },
+        {
+          refreshToken: stored.tokens.refreshToken,
+        },
         {
           headers: {
             Authorization: `Bearer ${stored.tokens.token}`,
           },
-        }
+        },
       )
       .catch(() => {
-        
+        // Den lokala sessionen är redan avslutad.
       });
   }
 
   function updateUser(patch: Partial<AuthUser>) {
     const current = userRef.current;
+
     if (!current) return;
 
     const stored = readStoredAuth();
@@ -304,16 +354,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const updated: AuthUser = {
       ...current,
       ...patch,
-
-      
       id: current.id,
-
       roles: normalizeRoles(
-        patch.roles === undefined ? current.roles : patch.roles
+        patch.roles === undefined ? current.roles : patch.roles,
       ),
     };
 
-    // Behåll token och refreshToken från den nuvarande sessionen.
+    // Behåll aktuella tokens, även om de nyligen har förnyats.
     writeStoredAuth({
       tokens: stored.tokens,
       user: updated,

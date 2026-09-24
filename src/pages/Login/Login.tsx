@@ -10,6 +10,33 @@ type LocationState = {
   };
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getRequestPath(error: unknown): string | undefined {
+  if (!axios.isAxiosError(error)) return undefined;
+
+  return error.config?.url
+    ?.split("?")[0]
+    .replace(/\/+$/, "")
+    .toLowerCase();
+}
+
+function requiresEmailVerification(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+
+  const data: unknown = error.response?.data;
+  const requestPath = getRequestPath(error);
+
+  return (
+    requestPath?.endsWith("/api/auth/login") === true &&
+    error.response?.status === 403 &&
+    isRecord(data) &&
+    data.code === "EmailNotConfirmed"
+  );
+}
+
 function getLoginError(error: unknown): string {
   if (!axios.isAxiosError(error)) {
     return "Inloggningen kunde inte slutföras. Försök igen.";
@@ -27,10 +54,7 @@ function getLoginError(error: unknown): string {
   }
 
   const status = error.response.status;
-  const requestPath = error.config?.url
-    ?.split("?")[0]
-    .replace(/\/+$/, "")
-    .toLowerCase();
+  const requestPath = getRequestPath(error);
 
   const isLoginRequest = requestPath?.endsWith("/api/auth/login");
   const isProfileRequest = requestPath?.endsWith("/api/users/me");
@@ -45,13 +69,30 @@ function getLoginError(error: unknown): string {
 
   if (isProfileRequest) {
     if (status === 401) {
-      return "Inloggningen lyckades, men sessionen kunde inte verifieras. Försök igen. Kontakta support om felet kvarstår.";
+      return (
+        "Inloggningen lyckades, men sessionen kunde inte verifieras. " +
+        "Försök igen. Kontakta support om felet kvarstår."
+      );
     }
 
-    return "Inloggningen lyckades, men din profil kunde inte hämtas. Försök igen.";
+    return (
+      "Inloggningen lyckades, men din profil kunde inte hämtas. " +
+      "Försök igen."
+    );
   }
 
   if (isLoginRequest && status === 401) {
+    // Backend returnerar detta meddelande för ett låst konto.
+    if (
+      error.response.data ===
+      "Kontot är tillfälligt låst. Försök senare."
+    ) {
+      return (
+        "Kontot är tillfälligt låst efter för många felaktiga försök. " +
+        "Försök igen när låsningen har upphört."
+      );
+    }
+
     return "Fel e-post eller lösenord.";
   }
 
@@ -88,9 +129,11 @@ export function Login() {
     setError(null);
     setIsSubmitting(true);
 
+    const submittedEmail = email.trim();
+
     try {
       await login({
-        email: email.trim(),
+        email: submittedEmail,
         password,
       });
 
@@ -107,8 +150,24 @@ export function Login() {
           : "/";
 
       navigate(destination, { replace: true });
-    } catch (error: unknown) {
-      setError(getLoginError(error));
+    } catch (caughtError: unknown) {
+      if (requiresEmailVerification(caughtError)) {
+        setPassword("");
+
+        navigate("/verify-email", {
+          replace: true,
+          state: {
+            email: submittedEmail,
+            message:
+              "Verifiera din e-postadress innan du loggar in. " +
+              "Ange en giltig kod från ditt senaste mejl eller välj Skicka ny kod.",
+          },
+        });
+
+        return;
+      }
+
+      setError(getLoginError(caughtError));
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
@@ -167,7 +226,10 @@ export function Login() {
                 spellCheck={false}
                 required
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setError(null);
+                }}
                 placeholder="namn@example.com"
                 className="min-h-12 w-full rounded-lg border border-border bg-white px-3 py-3 text-base text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
               />
@@ -189,14 +251,19 @@ export function Login() {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setError(null);
+                  }}
                   className="min-h-12 w-full rounded-lg border border-border bg-white py-3 pl-3 pr-14 text-base text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword((visible) => !visible)}
-                  aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}
+                  aria-label={
+                    showPassword ? "Dölj lösenord" : "Visa lösenord"
+                  }
                   aria-controls="password"
                   className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-text-secondary hover:bg-background hover:text-text-primary focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60"
                 >
@@ -230,13 +297,16 @@ export function Login() {
                   className="animate-spin motion-reduce:animate-none"
                 />
               )}
+
               {isSubmitting ? "Loggar in..." : "Logga in"}
             </button>
           </fieldset>
         </form>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-x-1 text-sm">
-          <span className="text-text-secondary">Har du inget konto?</span>
+          <span className="text-text-secondary">
+            Har du inget konto?
+          </span>
 
           <Link
             to="/register"
@@ -244,6 +314,10 @@ export function Login() {
           >
             Registrera dig
           </Link>
+        </div>
+
+        <div className="flex justify-center text-sm">
+          
         </div>
       </div>
     </main>

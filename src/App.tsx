@@ -5,6 +5,7 @@ import { Layout } from "./components/layout/layout";
 
 import { Login } from "./pages/Login/Login";
 import { Register } from "./pages/Register/Register";
+import { VerifyEmail } from "./pages/Register/VerifyEmail";
 import { ForgotPassword } from "./pages/ForgotPassword/ForgotPassword";
 import { ResetPassword } from "./pages/ForgotPassword/ResetPassword";
 
@@ -23,6 +24,7 @@ export default function App() {
           {/* Publika sidor */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -31,12 +33,9 @@ export default function App() {
             <Route element={<Layout />}>
               <Route index element={<Dashboard />} />
 
-              <Route
-                path="subscriptions"
-                element={<Subscriptions />}
-              />
+              <Route path="subscriptions" element={<Subscriptions />} />
 
-              {/* Tillfälligt: betalningsöversikten finns på dashboarden */}
+              {/* Betalningsöversikten finns på dashboarden */}
               <Route
                 path="upcoming"
                 element={<Navigate to="/" replace />}
