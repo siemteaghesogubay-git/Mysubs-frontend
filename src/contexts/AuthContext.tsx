@@ -51,7 +51,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(
 // Separat klient utan automatisk tokenförnyelse för autentiseringsanrop.
 const sessionClient = axios.create({
   baseURL: apiClient.defaults.baseURL,
-  timeout: 30_000,
+  timeout: 90_000,
 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {

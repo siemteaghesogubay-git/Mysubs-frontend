@@ -19,13 +19,13 @@ if (!baseURL) {
 
 export const apiClient = axios.create({
   baseURL,
-  timeout: 30_000,
+  timeout: 90_000,
 });
 
 // Separat klient för att undvika att refresh anropar sig själv.
 const refreshClient = axios.create({
   baseURL,
-  timeout: 30_000,
+  timeout: 90_000,
 });
 
 let accessToken: string | null = null;
@@ -106,7 +106,7 @@ function persistRefreshedTokens(
 }
 
 function clearSession(version: number) {
-  // Ett gammalt anrop får inte logga ut en ny session.
+  // Ett gammalt svar kan komma efter att sessionen redan har ändrats.  
   if (version !== sessionVersion) return;
 
   setAuthTokens(null);
