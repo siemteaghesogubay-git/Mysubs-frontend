@@ -4,16 +4,78 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  HeartPulse,
+  Music,
+  Code2,
+  Gamepad2,
+  Tv,
+  GraduationCap,
+  Tag,
+} from "lucide-react";
+
 import {
   createCategory,
   deleteCategory,
   getCategories,
   updateCategory,
 } from "../../api/categories";
+
 import type { CategoryResponse } from "../../types/category";
 import { useAuth } from "../../contexts/AuthContext";
 import { CategoryModal } from "./CategoryModal";
+
+/**
+ * Returnerar en ikon som passar kategorins namn.
+ * Tag används som standard om ingen kategori matchar.AI
+ */
+function getCategoryIcon(categoryName: string) {
+  const name = categoryName.toLowerCase();
+
+  if (
+    name.includes("hälsa") ||
+    name.includes("fitness") ||
+    name.includes("gym")
+  ) {
+    return HeartPulse;
+  }
+
+  if (name.includes("music") || name.includes("musik")) {
+    return Music;
+  }
+
+  if (
+    name.includes("programvara") ||
+    name.includes("verktyg") ||
+    name.includes("software")
+  ) {
+    return Code2;
+  }
+
+  if (name.includes("spel") || name.includes("game")) {
+    return Gamepad2;
+  }
+
+  if (
+    name.includes("streaming") ||
+    name.includes("film") ||
+    name.includes("tv")
+  ) {
+    return Tv;
+  }
+
+  if (
+    name.includes("utbildning") ||
+    name.includes("education")
+  ) {
+    return GraduationCap;
+  }
+
+  return Tag;
+}
 
 export function Categories() {
   const queryClient = useQueryClient();
@@ -21,6 +83,7 @@ export function Categories() {
 
   const [editingCategory, setEditingCategory] =
     useState<CategoryResponse | null>(null);
+
   const [isCreating, setIsCreating] = useState(false);
 
   const categoriesQuery = useQuery({
@@ -79,7 +142,11 @@ export function Categories() {
       return;
     }
 
-    if (!window.confirm(`Ta bort kategorin "${category.name}"?`)) {
+    if (
+      !window.confirm(
+        `Ta bort kategorin "${category.name}"?`
+      )
+    ) {
       return;
     }
 
@@ -90,6 +157,7 @@ export function Categories() {
 
   return (
     <div>
+      {/* Sidhuvud */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-text-primary">
@@ -117,6 +185,7 @@ export function Categories() {
           : "Kategorier du skapar är privata. Gemensamma kategorier kan bara ändras av admin."}
       </p>
 
+      {/* Laddning */}
       {categoriesQuery.isLoading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2, 3].map((index) => (
@@ -127,10 +196,12 @@ export function Categories() {
           ))}
         </div>
       ) : categoriesQuery.isError ? (
+        /* Felmeddelande */
         <p role="alert" className="text-[13px] text-danger">
           Kunde inte hämta kategorier.
         </p>
       ) : categories.length === 0 ? (
+        /* Tom lista */
         <div className="rounded-xl border border-border bg-surface p-8 text-center shadow-card">
           <p className="text-[13px] font-medium text-text-primary">
             Inga kategorier än
@@ -142,59 +213,79 @@ export function Categories() {
           </p>
         </div>
       ) : (
+        /* Kategorikort */
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 shadow-card"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className="h-8 w-8 shrink-0 rounded-lg"
-                  style={{
-                    backgroundColor: category.color ?? "#9ca3af",
-                  }}
-                  aria-hidden="true"
-                />
+          {categories.map((category) => {
+            const Icon = getCategoryIcon(category.name);
 
-                <div className="min-w-0">
-                  <p className="break-words text-[13px] font-medium text-text-primary">
-                    {category.name}
-                  </p>
+            return (
+              <div
+                key={category.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 shadow-card"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  {/* Kategoriikon */}
+                  <div
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor:
+                        category.color ?? "#9ca3af",
+                    }}
+                    aria-hidden="true"
+                  >
+                    <Icon
+                      size={18}
+                      color="#ffffff"
+                      strokeWidth={2}
+                    />
+                  </div>
 
-                  <p className="mt-1 text-xs text-text-secondary">
-                    {category.isGlobal ? "Gemensam" : "Privat"}
-                  </p>
+                  {/* Kategorinamn och typ */}
+                  <div className="min-w-0">
+                    <p className="break-words text-[13px] font-medium text-text-primary">
+                      {category.name}
+                    </p>
+
+                    <p className="mt-1 text-xs text-text-secondary">
+                      {category.isGlobal
+                        ? "Gemensam"
+                        : "Privat"}
+                    </p>
+                  </div>
                 </div>
+
+                {/* Hanteringsknappar */}
+                {category.canManage && (
+                  <div className="flex shrink-0 gap-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingCategory(category)
+                      }
+                      aria-label={`Redigera ${category.name}`}
+                      className="rounded-md p-1.5 text-text-secondary hover:bg-background hover:text-text-primary"
+                    >
+                      <Pencil size={14} />
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => handleDelete(category)}
+                      aria-label={`Ta bort ${category.name}`}
+                      className="rounded-md p-1.5 text-text-secondary hover:bg-danger-soft hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {category.canManage && (
-                <div className="flex shrink-0 gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setEditingCategory(category)}
-                    aria-label={`Redigera ${category.name}`}
-                    className="rounded-md p-1.5 text-text-secondary hover:bg-background hover:text-text-primary"
-                  >
-                    <Pencil size={14} />
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => handleDelete(category)}
-                    aria-label={`Ta bort ${category.name}`}
-                    className="rounded-md p-1.5 text-text-secondary hover:bg-danger-soft hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
+      {/* Skapa kategori */}
       {isCreating && (
         <CategoryModal
           onClose={() => setIsCreating(false)}
@@ -204,6 +295,7 @@ export function Categories() {
         />
       )}
 
+      {/* Redigera kategori */}
       {editingCategory && (
         <CategoryModal
           initial={editingCategory}
@@ -218,5 +310,4 @@ export function Categories() {
       )}
     </div>
   );
-  
 }
