@@ -298,7 +298,7 @@ export function Register() {
 
             <div className="mb-4">
               <label htmlFor="phoneNumber" className={labelClass}>
-                Telefon (valfritt)
+                Telefon  
               </label>
               <input
                 id="phoneNumber"
