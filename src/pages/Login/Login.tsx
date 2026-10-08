@@ -1,7 +1,21 @@
 import { useRef, useState, type FormEvent } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CreditCard, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import {
+  Check,
+  Clapperboard,
+  Eye,
+  EyeOff,
+  Gamepad2,
+  LoaderCircle,
+  Lock,
+  Mail,
+  Music,
+  Play,
+  Plus,
+  Tv,
+  Wallet,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 type LocationState = {
@@ -107,6 +121,25 @@ function getLoginError(error: unknown): string {
   return "Inloggningen kunde inte slutföras. Försök igen.";
 }
 
+const featureList = [
+  "Få koll på kostnader",
+  "Håll koll på kommande betalningar",
+  "Organisera i kategorier",
+];
+
+// Neutrala ikoner som platshållare. Byt mot riktiga tjänstelogotyper vid behov.
+const serviceTiles = [Music, Clapperboard, Play, Gamepad2, Tv, Plus];
+
+function BrandMark({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`flex items-center justify-center rounded-xl bg-primary text-white ${className}`}
+    >
+      <Wallet size={24} aria-hidden="true" />
+    </div>
+  );
+}
+
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -175,151 +208,221 @@ export function Login() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col bg-background px-4 py-8 sm:py-12">
-      <div className="my-auto w-full max-w-sm self-center">
-        <header className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white">
-            <CreditCard size={26} aria-hidden="true" />
-          </div>
+    <main className="min-h-dvh bg-background lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:bg-[#0b2a5b] lg:p-4">
+      {/* Vänster panel (endast desktop) */}
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-[radial-gradient(120%_90%_at_15%_0%,#17428b_0%,#0b2a5b_55%,#071c40_100%)] px-10 py-12 text-white lg:flex xl:px-16">
+        <div className="relative z-10 flex items-center gap-3">
+          <BrandMark className="h-11 w-11" />
+          <span className="text-3xl font-semibold tracking-tight">
+            MySubs
+          </span>
+        </div>
 
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-            Logga in på MySubs
-          </h1>
+        <div className="relative z-10">
+          <h2 className="max-w-xs text-2xl font-semibold leading-snug tracking-tight">
+            Dina prenumerationer samlade på ett ställe
+          </h2>
 
-          <p className="mt-2 text-sm text-text-secondary">
-            Håll koll på dina prenumerationer.
-          </p>
-        </header>
-
-        <form
-          onSubmit={handleSubmit}
-          aria-busy={isSubmitting}
-          className="rounded-2xl border border-border bg-surface p-5 shadow-card sm:p-6"
-        >
-          {error && (
-            <div
-              role="alert"
-              className="mb-5 rounded-lg border border-danger-soft bg-danger-soft px-4 py-3 text-sm leading-relaxed text-danger"
-            >
-              {error}
-            </div>
-          )}
-
-          <fieldset disabled={isSubmitting} className="min-w-0">
-            <legend className="sr-only">Inloggningsuppgifter</legend>
-
-            <div className="mb-5">
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-medium text-text-primary"
+          <ul className="mt-6 space-y-3">
+            {featureList.map((feature) => (
+              <li
+                key={feature}
+                className="flex items-center gap-3 text-sm text-white/85"
               >
-                E-post
-              </label>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/40">
+                  <Check size={12} aria-hidden="true" />
+                </span>
+                {feature}
+              </li>
+            ))}
+          </ul>
 
-              <input
-                id="email"
-                name="email"
-                type="email"
-                inputMode="email"
-                autoComplete="username"
-                autoCapitalize="none"
-                spellCheck={false}
-                required
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  setError(null);
-                }}
-                placeholder="namn@example.com"
-                className="min-h-12 w-full rounded-lg border border-border bg-white px-3 py-3 text-base text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-medium text-text-primary"
+          <div
+            className="mt-10 grid w-fit grid-cols-3 gap-3"
+            aria-hidden="true"
+          >
+            {serviceTiles.map((Icon, index) => (
+              <div
+                key={index}
+                className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-white/80"
               >
-                Lösenord
-              </label>
-
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                    setError(null);
-                  }}
-                  className="min-h-12 w-full rounded-lg border border-border bg-white py-3 pl-3 pr-14 text-base text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  aria-label={
-                    showPassword ? "Dölj lösenord" : "Visa lösenord"
-                  }
-                  aria-controls="password"
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-text-secondary hover:bg-background hover:text-text-primary focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60"
-                >
-                  {showPassword ? (
-                    <EyeOff size={20} aria-hidden="true" />
-                  ) : (
-                    <Eye size={20} aria-hidden="true" />
-                  )}
-                </button>
+                <Icon size={22} />
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            <div className="mb-4 mt-1 flex justify-end">
-              <Link
-                to="/forgot-password"
-                className="inline-flex min-h-11 items-center rounded-md px-1 text-sm font-medium text-primary hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                Glömt lösenord?
-              </Link>
-            </div>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 600 160"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full text-white/5"
+        >
+          <path
+            fill="currentColor"
+            d="M0 160V110l70-45 60 35 90-70 80 60 70-40 100 75 60-30 70 45v20z"
+          />
+        </svg>
+      </aside>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-base font-medium text-white transition hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSubmitting && (
-                <LoaderCircle
-                  size={20}
-                  aria-hidden="true"
-                  className="animate-spin motion-reduce:animate-none"
-                />
+      {/* Höger panel */}
+      <section className="flex min-h-dvh items-center justify-center px-4 py-8 lg:min-h-0 lg:p-0">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-card sm:p-8 lg:flex lg:h-full lg:max-w-none lg:flex-col lg:justify-center lg:px-14">
+          <div className="mx-auto w-full max-w-sm">
+            <header className="mb-7">
+              <div className="mb-5 flex items-center gap-3 lg:hidden">
+                <BrandMark className="h-10 w-10" />
+                <span className="text-xl font-semibold tracking-tight text-text-primary">
+                  MySubs
+                </span>
+              </div>
+
+              <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+                Logga in på MySubs
+              </h1>
+
+              <p className="mt-2 text-sm text-text-secondary">
+                Håll koll på dina prenumerationer.
+              </p>
+            </header>
+
+            <form onSubmit={handleSubmit} aria-busy={isSubmitting}>
+              {error && (
+                <div
+                  role="alert"
+                  className="mb-5 rounded-lg border border-danger-soft bg-danger-soft px-4 py-3 text-sm leading-relaxed text-danger"
+                >
+                  {error}
+                </div>
               )}
 
-              {isSubmitting ? "Loggar in..." : "Logga in"}
-            </button>
-          </fieldset>
-        </form>
+              <fieldset disabled={isSubmitting} className="min-w-0">
+                <legend className="sr-only">Inloggningsuppgifter</legend>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-1 text-sm">
-          <span className="text-text-secondary">
-            Har du inget konto?
-          </span>
+                <div className="mb-5">
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-medium text-text-primary"
+                  >
+                    E-post
+                  </label>
 
-          <Link
-            to="/register"
-            className="inline-flex min-h-11 items-center rounded-md px-1 font-medium text-primary hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            Registrera dig
-          </Link>
+                  <div className="relative">
+                    <Mail
+                      size={18}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary"
+                    />
+
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      inputMode="email"
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      required
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        setError(null);
+                      }}
+                      placeholder="namn@example.com"
+                      className="min-h-12 w-full rounded-lg border border-border bg-white py-3 pl-11 pr-3 text-base text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-2 block text-sm font-medium text-text-primary"
+                  >
+                    Lösenord
+                  </label>
+
+                  <div className="relative">
+                    <Lock
+                      size={18}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary"
+                    />
+
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={(event) => {
+                        setPassword(event.target.value);
+                        setError(null);
+                      }}
+                      className="min-h-12 w-full rounded-lg border border-border bg-white py-3 pl-11 pr-14 text-base text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      aria-label={
+                        showPassword ? "Dölj lösenord" : "Visa lösenord"
+                      }
+                      aria-controls="password"
+                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-text-secondary hover:bg-background hover:text-text-primary focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60"
+                    >
+                      {showPassword ? (
+                        <EyeOff size={20} aria-hidden="true" />
+                      ) : (
+                        <Eye size={20} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mb-4 mt-1 flex justify-end">
+                  <Link
+                    to="/forgot-password"
+                    className="inline-flex min-h-11 items-center rounded-md px-1 text-sm font-medium text-primary hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    Glömt lösenord?
+                  </Link>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-base font-medium text-white transition hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmitting && (
+                    <LoaderCircle
+                      size={20}
+                      aria-hidden="true"
+                      className="animate-spin motion-reduce:animate-none"
+                    />
+                  )}
+
+                  {isSubmitting ? "Loggar in..." : "Logga in"}
+                </button>
+              </fieldset>
+            </form>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-1 border-t border-border pt-4 text-sm">
+              <span className="text-text-secondary">
+                Har du inget konto?
+              </span>
+
+              <Link
+                to="/register"
+                className="inline-flex min-h-11 items-center rounded-md px-1 font-medium text-primary hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                Registrera dig
+              </Link>
+            </div>
+          </div>
         </div>
-
-        <div className="flex justify-center text-sm">
-          
-        </div>
-      </div>
+      </section>
     </main>
   );
 }
