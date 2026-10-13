@@ -1,0 +1,44 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "language": "Language"
+  },
+  "nav": {
+    "dashboard": "Overview",
+    "subscriptions": "Subscriptions",
+    "categories": "Categories",
+    "upcoming": "Upcoming payments",
+    "family": "Family groups",
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "auth": {
+    "welcome": "Welcome back",
+    "email": "Email address",
+    "password": "Password",
+    "login": "Sign in",
+    "register": "Create account",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?"
+  },
+  "dashboard": {
+    "title": "Overview",
+    "monthlyCost": "Monthly cost",
+    "active": "Active subscriptions",
+    "upcoming": "Upcoming payments"
+  }
+}
+
+
+
+
+
+
+
+
+
+

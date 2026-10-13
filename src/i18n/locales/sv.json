@@ -1,0 +1,72 @@
+
+  {
+  "common": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "loading": "Laddar...",
+    "language": "Språk"
+  },
+  "nav": {
+    "dashboard": "Översikt",
+    "subscriptions": "Prenumerationer",
+    "categories": "Kategorier",
+    "upcoming": "Kommande betalningar",
+    "family": "Familjegrupper",
+    "profile": "Profil",
+    "logout": "Logga ut"
+  },
+  "auth": {
+    "welcome": "Välkommen tillbaka",
+    "email": "E-post",
+    "emailPlaceholder": "namn@example.com",
+    "password": "Lösenord",
+    "showPassword": "Visa lösenord",
+    "hidePassword": "Dölj lösenord",
+    "login": "Logga in",
+    "loggingIn": "Loggar in...",
+    "register": "Registrera dig",
+    "forgotPassword": "Glömt lösenord?",
+    "noAccount": "Har du inget konto?",
+    "heroTitle": "Dina prenumerationer samlade på ett ställe",
+    "features": {
+      "costs": "Få koll på kostnader",
+      "upcoming": "Håll koll på kommande betalningar",
+      "categories": "Organisera i kategorier"
+    },
+    "title": "Logga in på MySubs",
+    "subtitle": "Håll koll på dina prenumerationer.",
+    "credentialsLegend": "Inloggningsuppgifter",
+    "verifyEmailMessage": "Verifiera din e-postadress innan du loggar in. Ange en giltig kod från ditt senaste mejl eller välj Skicka ny kod.",
+    "errors": {
+      "generic": "Inloggningen kunde inte slutföras. Försök igen.",
+      "timeout": "Servern tog för lång tid på sig att svara. Försök igen.",
+      "network": "Kunde inte nå servern. Kontrollera din anslutning och försök igen.",
+      "tooManyRequests": "För många försök. Vänta en stund och försök igen.",
+      "server": "Ett serverfel uppstod. Försök igen om en stund.",
+      "sessionUnverified": "Inloggningen lyckades, men sessionen kunde inte verifieras. Försök igen. Kontakta support om felet kvarstår.",
+      "profileFailed": "Inloggningen lyckades, men din profil kunde inte hämtas. Försök igen.",
+      "accountLocked": "Kontot är tillfälligt låst efter för många felaktiga försök. Försök igen när låsningen har upphört.",
+      "invalidCredentials": "Fel e-post eller lösenord.",
+      "badRequest": "Kontrollera dina inloggningsuppgifter och försök igen.",
+      "forbidden": "Du saknar behörighet att slutföra inloggningen."
+    }
+  },
+  "dashboard": {
+    "title": "Översikt",
+    "monthlyCost": "Månadskostnad",
+    "active": "Aktiva prenumerationer",
+    "upcoming": "Kommande betalningar"
+  }
+}
+
+
+
+
+
+
+
+
+
+
