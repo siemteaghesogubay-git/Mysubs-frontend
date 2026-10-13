@@ -19,11 +19,38 @@
   "auth": {
     "welcome": "Welcome back",
     "email": "Email address",
+    "emailPlaceholder": "name@example.com",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "login": "Sign in",
+    "loggingIn": "Signing in...",
     "register": "Create account",
     "forgotPassword": "Forgot password?",
-    "noAccount": "Don't have an account?"
+    "noAccount": "Don't have an account?",
+    "title": "Log in to MySubs",
+    "subtitle": "Keep track of your subscriptions.",
+    "credentialsLegend": "Login credentials",
+    "heroTitle": "All your subscriptions in one place",
+    "features": {
+      "costs": "Keep track of costs",
+      "upcoming": "Stay on top of upcoming payments",
+      "categories": "Organize by category"
+    },
+    "verifyEmailMessage": "Verify your email address before logging in. Enter a valid code from your latest email or choose Send new code.",
+    "errors": {
+      "generic": "Login could not be completed. Please try again.",
+      "timeout": "The server took too long to respond. Please try again.",
+      "network": "Could not reach the server. Check your connection and try again.",
+      "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+      "server": "A server error occurred. Please try again shortly.",
+      "sessionUnverified": "Login succeeded, but the session could not be verified. Try again. Contact support if the problem persists.",
+      "profileFailed": "Login succeeded, but your profile could not be loaded. Please try again.",
+      "accountLocked": "The account is temporarily locked after too many failed attempts. Try again once the lock has expired.",
+      "invalidCredentials": "Wrong email or password.",
+      "badRequest": "Check your login details and try again.",
+      "forbidden": "You do not have permission to complete the login."
+    }
   },
   "dashboard": {
     "title": "Overview",
@@ -32,13 +59,3 @@
     "upcoming": "Upcoming payments"
   }
 }
-
-
-
-
-
-
-
-
-
-
