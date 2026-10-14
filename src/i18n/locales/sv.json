@@ -5,7 +5,9 @@
     "delete": "Ta bort",
     "edit": "Redigera",
     "loading": "Laddar...",
-    "language": "Språk"
+    "language": "Språk",
+    "retry": "Försök igen",
+    "fetching": "Hämtar..."
   },
   "nav": {
     "dashboard": "Översikt",
@@ -64,7 +66,24 @@
     "title": "Översikt",
     "monthlyCost": "Månadskostnad",
     "active": "Aktiva prenumerationer",
-    "upcoming": "Kommande betalningar"
+    "upcoming": "Kommande betalningar",
+    "cancelled": "Avslutade prenumerationer",
+    "greeting": "Hej, {{name}}! 👋",
+    "greetingNoName": "Hej! 👋",
+    "subtitle": "Här är din översikt idag.",
+    "notifications": "Notiser",
+    "missingUser": "Användaruppgifter saknas. Logga ut och logga in igen.",
+    "loadingSummary": "Laddar översikten",
+    "summaryError": "Kunde inte visa översikten. Serverns svar behöver kontrolleras om felet kvarstår.",
+    "costByCategory": "Kostnad per kategori",
+    "costByCategoryUnavailable": "Kostnadsfördelningen är inte tillgänglig just nu.",
+    "noCategoryCostTitle": "Ingen kostnadsfördelning att visa",
+    "noCategoryCostDescription": "När det finns kostnader per kategori visas de här.",
+    "nextDays": "(nästa {{days}} dagar)",
+    "loadingPayments": "Laddar betalningar",
+    "paymentsError": "Kunde inte visa kommande betalningar.",
+    "noPaymentsTitle": "Inget att betala just nu",
+    "noPaymentsDescription": "Inga betalningar planerade de kommande {{days}} dagarna."
   },
   "register": {
     "title": "Skapa konto",

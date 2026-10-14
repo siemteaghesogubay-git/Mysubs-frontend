@@ -5,7 +5,9 @@
     "delete": "Delete",
     "edit": "Edit",
     "loading": "Loading...",
-    "language": "Language"
+    "language": "Language",
+    "retry": "Try again",
+    "fetching": "Fetching..."
   },
   "nav": {
     "dashboard": "Overview",
@@ -64,7 +66,24 @@
     "title": "Overview",
     "monthlyCost": "Monthly cost",
     "active": "Active subscriptions",
-    "upcoming": "Upcoming payments"
+    "upcoming": "Upcoming payments",
+    "cancelled": "Cancelled subscriptions",
+    "greeting": "Hi, {{name}}! 👋",
+    "greetingNoName": "Hi! 👋",
+    "subtitle": "Here's your overview for today.",
+    "notifications": "Notifications",
+    "missingUser": "User details are missing. Log out and sign in again.",
+    "loadingSummary": "Loading overview",
+    "summaryError": "Could not show the overview. If the problem persists, the server response needs to be checked.",
+    "costByCategory": "Cost by category",
+    "costByCategoryUnavailable": "The cost breakdown is not available right now.",
+    "noCategoryCostTitle": "No cost breakdown to show",
+    "noCategoryCostDescription": "Costs per category will appear here once there are any.",
+    "nextDays": "(next {{days}} days)",
+    "loadingPayments": "Loading payments",
+    "paymentsError": "Could not show upcoming payments.",
+    "noPaymentsTitle": "Nothing to pay right now",
+    "noPaymentsDescription": "No payments scheduled for the next {{days}} days."
   },
   "register": {
     "title": "Create account",
