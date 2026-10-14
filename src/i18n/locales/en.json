@@ -14,7 +14,15 @@
     "upcoming": "Upcoming payments",
     "family": "Family groups",
     "profile": "Profile",
-    "logout": "Log out"
+    "logout": "Log out",
+    "adminUsers": "Users",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNavigation": "Main navigation",
+    "skipToContent": "Skip to content",
+    "goToDashboard": "MySubs – go to overview",
+    "roleUser": "User",
+    "roleAdmin": "Admin"
   },
   "auth": {
     "welcome": "Welcome back",

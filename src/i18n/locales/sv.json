@@ -14,7 +14,15 @@
     "upcoming": "Kommande betalningar",
     "family": "Familjegrupper",
     "profile": "Profil",
-    "logout": "Logga ut"
+    "logout": "Logga ut",
+    "adminUsers": "Användare",
+    "openMenu": "Öppna meny",
+    "closeMenu": "Stäng meny",
+    "mainNavigation": "Huvudnavigation",
+    "skipToContent": "Hoppa till innehållet",
+    "goToDashboard": "MySubs – till översikten",
+    "roleUser": "Användare",
+    "roleAdmin": "Admin"
   },
   "auth": {
     "welcome": "Välkommen tillbaka",
@@ -28,15 +36,15 @@
     "register": "Registrera dig",
     "forgotPassword": "Glömt lösenord?",
     "noAccount": "Har du inget konto?",
+    "title": "Logga in på MySubs",
+    "subtitle": "Håll koll på dina prenumerationer.",
+    "credentialsLegend": "Inloggningsuppgifter",
     "heroTitle": "Dina prenumerationer samlade på ett ställe",
     "features": {
       "costs": "Få koll på kostnader",
       "upcoming": "Håll koll på kommande betalningar",
       "categories": "Organisera i kategorier"
     },
-    "title": "Logga in på MySubs",
-    "subtitle": "Håll koll på dina prenumerationer.",
-    "credentialsLegend": "Inloggningsuppgifter",
     "verifyEmailMessage": "Verifiera din e-postadress innan du loggar in. Ange en giltig kod från ditt senaste mejl eller välj Skicka ny kod.",
     "errors": {
       "generic": "Inloggningen kunde inte slutföras. Försök igen.",

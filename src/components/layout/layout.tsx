@@ -1,5 +1,7 @@
-import { useState } from "react";
+
+import { useRef, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   CreditCard,
@@ -13,14 +15,19 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 
 const navItems = [
-  { label: "Översikt", href: "/", icon: LayoutDashboard },
-  { label: "Prenumerationer", href: "/subscriptions", icon: CreditCard },
-  { label: "Kategorier", href: "/categories", icon: Tags },
-  { label: "Kommande betalningar", href: "/upcoming", icon: Clock },
-  { label: "Familjegrupper", href: "/family", icon: Users },
-  { label: "Profil", href: "/profile", icon: User },
+  { labelKey: "nav.dashboard", href: "/", icon: LayoutDashboard },
+  {
+    labelKey: "nav.subscriptions",
+    href: "/subscriptions",
+    icon: CreditCard,
+  },
+  { labelKey: "nav.categories", href: "/categories", icon: Tags },
+  { labelKey: "nav.upcoming", href: "/upcoming", icon: Clock },
+  { labelKey: "nav.family", href: "/family", icon: Users },
+  { labelKey: "nav.profile", href: "/profile", icon: User },
 ];
 
 function initials(firstName?: string, lastName?: string) {
@@ -41,9 +48,14 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 
 export function Layout() {
   const { user, isAdmin, logout } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
-  const roleLabel = isAdmin ? "Admin" : "User";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const roleLabel = isAdmin
+    ? t("nav.roleAdmin")
+    : t("nav.roleUser");
 
   function closeMenu() {
     setMenuOpen(false);
@@ -60,7 +72,7 @@ export function Layout() {
         href="#main-content"
         className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:not-sr-only focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-primary"
       >
-        Hoppa till innehållet
+        {t("nav.skipToContent")}
       </a>
 
       {/* Mobilheader */}
@@ -68,7 +80,7 @@ export function Layout() {
         <NavLink
           to="/"
           onClick={closeMenu}
-          aria-label="MySubs – till översikten"
+          aria-label={t("nav.goToDashboard")}
           className="flex min-h-11 items-center gap-2 rounded-md text-white focus-visible:outline-2 focus-visible:outline-white"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -78,11 +90,14 @@ export function Layout() {
         </NavLink>
 
         <button
+          ref={menuButtonRef}
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
           aria-expanded={menuOpen}
           aria-controls="main-sidebar"
-          aria-label={menuOpen ? "Stäng meny" : "Öppna meny"}
+          aria-label={
+            menuOpen ? t("nav.closeMenu") : t("nav.openMenu")
+          }
           className="flex h-11 w-11 items-center justify-center rounded-lg text-white hover:bg-sidebar-active focus-visible:outline-2 focus-visible:outline-white"
         >
           {menuOpen ? (
@@ -93,17 +108,13 @@ export function Layout() {
         </button>
       </header>
 
-      {/* Utfällbar mobilmeny och permanent sidomeny på desktop */}
+      {/* Mobilmeny och desktop-sidomeny */}
       <aside
         id="main-sidebar"
         onKeyDown={(event) => {
           if (event.key === "Escape" && menuOpen) {
             closeMenu();
-            document
-              .querySelector<HTMLButtonElement>(
-                'button[aria-controls="main-sidebar"]'
-              )
-              ?.focus();
+            menuButtonRef.current?.focus();
           }
         }}
         className={[
@@ -115,7 +126,8 @@ export function Layout() {
         {/* Desktoplogo */}
         <NavLink
           to="/"
-          aria-label="MySubs – till översikten"
+          onClick={closeMenu}
+          aria-label={t("nav.goToDashboard")}
           className="hidden min-h-11 items-center gap-2 rounded-md px-2 text-white focus-visible:outline-2 focus-visible:outline-white lg:flex"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -124,8 +136,11 @@ export function Layout() {
           <span className="text-base font-semibold">MySubs</span>
         </NavLink>
 
-        <nav aria-label="Huvudnavigation" className="flex flex-col gap-1">
-          {navItems.map(({ label, href, icon: Icon }) => (
+        <nav
+          aria-label={t("nav.mainNavigation")}
+          className="flex flex-col gap-1"
+        >
+          {navItems.map(({ labelKey, href, icon: Icon }) => (
             <NavLink
               key={href}
               to={href}
@@ -133,8 +148,12 @@ export function Layout() {
               onClick={closeMenu}
               className={navLinkClass}
             >
-              <Icon size={18} className="shrink-0" aria-hidden="true" />
-              <span>{label}</span>
+              <Icon
+                size={18}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+              <span>{t(labelKey)}</span>
             </NavLink>
           ))}
 
@@ -154,51 +173,60 @@ export function Layout() {
                   className="shrink-0"
                   aria-hidden="true"
                 />
-                <span>Användare</span>
+                <span>{t("nav.adminUsers")}</span>
               </NavLink>
             </>
           )}
         </nav>
 
-        {/* Inloggad användare */}
-        <div className="mt-auto rounded-lg bg-sidebar-active/50 p-3">
-          <div className="flex items-center gap-3">
-            <div
-              aria-hidden="true"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-white"
-            >
-              {initials(user?.firstName, user?.lastName)}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-white">
-                {user?.firstName} {user?.lastName}
-              </div>
-              <div className="break-all text-xs text-sidebar-text">
-                {user?.email}
-              </div>
-            </div>
+        {/* Språkväljare och inloggad användare */}
+        <div className="mt-auto space-y-3">
+          <div className="rounded-lg bg-sidebar-active/50 p-3">
+            <p className="mb-2 text-xs font-medium text-sidebar-text">
+              {t("common.language")}
+            </p>
+            <LanguageSwitcher />
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <span
-              className={`rounded px-2 py-1 text-xs font-medium ${
-                isAdmin
-                  ? "bg-primary/20 text-primary-soft"
-                  : "bg-white/10 text-sidebar-text-active"
-              }`}
-            >
-              {roleLabel}
-            </span>
+          <div className="rounded-lg bg-sidebar-active/50 p-3">
+            <div className="flex items-center gap-3">
+              <div
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-white"
+              >
+                {initials(user?.firstName, user?.lastName)}
+              </div>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-sm text-sidebar-text hover:bg-sidebar-active hover:text-white focus-visible:outline-2 focus-visible:outline-white"
-            >
-              <LogOut size={18} aria-hidden="true" />
-              Logga ut
-            </button>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-white">
+                  {user?.firstName} {user?.lastName}
+                </div>
+                <div className="break-all text-xs text-sidebar-text">
+                  {user?.email}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <span
+                className={`rounded px-2 py-1 text-xs font-medium ${
+                  isAdmin
+                    ? "bg-primary/20 text-primary-soft"
+                    : "bg-white/10 text-sidebar-text-active"
+                }`}
+              >
+                {roleLabel}
+              </span>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-sm text-sidebar-text hover:bg-sidebar-active hover:text-white focus-visible:outline-2 focus-visible:outline-white"
+              >
+                <LogOut size={18} aria-hidden="true" />
+                {t("nav.logout")}
+              </button>
+            </div>
           </div>
         </div>
       </aside>
