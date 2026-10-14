@@ -63,6 +63,7 @@
     }
   },
   "dashboard": {
+    "perMonth": "per månad",
     "title": "Översikt",
     "monthlyCost": "Månadskostnad",
     "active": "Aktiva prenumerationer",

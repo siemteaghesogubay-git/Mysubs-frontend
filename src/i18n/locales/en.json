@@ -64,6 +64,7 @@
   },
   "dashboard": {
     "title": "Overview",
+    "perMonth": "per month",
     "monthlyCost": "Monthly cost",
     "active": "Active subscriptions",
     "upcoming": "Upcoming payments",
