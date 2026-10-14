@@ -1,32 +1,35 @@
+
 import { useRef, useState, type FormEvent } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { CreditCard } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
+import i18n from "../../i18n/config";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
 function getRegistrationError(error: unknown): string {
+  const t = i18n.t.bind(i18n);
+
   if (!axios.isAxiosError(error)) {
-    return "Kunde inte slutföra registreringen. Försök igen.";
+    return t("register.errors.generic");
   }
 
   if (!error.response) {
-    return (
-      "Vi fick inget svar från servern. Kontot kan ha skapats. " +
-      "Kontrollera din inkorg eller välj Verifiera e-post nedan."
-    );
+    return t("register.errors.noResponse");
   }
 
   if (error.response.status === 429) {
-    return "För många försök. Vänta en stund och försök igen.";
+    return t("register.errors.tooManyRequests");
   }
 
   const data: unknown = error.response.data;
 
-  // Identity returnerar en lista med fel.
+  // Felkoder från ASP.NET Core Identity
   if (Array.isArray(data)) {
     const messages = data
       .filter(isRecord)
@@ -34,25 +37,22 @@ function getRegistrationError(error: unknown): string {
         switch (item.code) {
           case "DuplicateEmail":
           case "DuplicateUserName":
-            return (
-              "E-postadressen används redan. Logga in eller verifiera " +
-              "din e-postadress via länken nedan."
-            );
+            return t("register.errors.duplicateEmail");
 
           case "PasswordTooShort":
-            return "Lösenordet måste innehålla minst åtta tecken.";
+            return t("register.errors.passwordTooShort");
 
           case "PasswordRequiresDigit":
-            return "Lösenordet måste innehålla minst en siffra.";
+            return t("register.errors.passwordRequiresDigit");
 
           case "PasswordRequiresUpper":
-            return "Lösenordet måste innehålla minst en stor bokstav.";
+            return t("register.errors.passwordRequiresUpper");
 
           case "PasswordRequiresLower":
-            return "Lösenordet måste innehålla minst en liten bokstav.";
+            return t("register.errors.passwordRequiresLower");
 
           case "InvalidEmail":
-            return "Ange en giltig e-postadress.";
+            return t("register.errors.invalidEmail");
 
           default:
             return null;
@@ -65,7 +65,7 @@ function getRegistrationError(error: unknown): string {
     }
   }
 
-  // Hantera valideringsfel från ASP.NET Core.
+  // Valideringsfel från ASP.NET Core
   if (
     error.response.status === 400 &&
     isRecord(data) &&
@@ -80,12 +80,13 @@ function getRegistrationError(error: unknown): string {
     }
   }
 
-  return "Kunde inte skapa kontot. Kontrollera uppgifterna och försök igen.";
+  return t("register.errors.createFailed");
 }
 
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const submittingRef = useRef(false);
 
@@ -116,12 +117,17 @@ export function Register() {
     setError(null);
 
     if (!form.firstName.trim() || !form.lastName.trim()) {
-      setError("Ange både förnamn och efternamn.");
+      setError(t("register.errors.nameRequired"));
+      return;
+    }
+
+    if (!form.phoneNumber.trim()) {
+      setError(t("register.errors.phoneRequired"));
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      setError("Lösenorden matchar inte.");
+      setError(t("register.errors.passwordMismatch"));
       return;
     }
 
@@ -131,10 +137,7 @@ export function Register() {
       !/[a-z]/.test(form.password) ||
       !/[0-9]/.test(form.password)
     ) {
-      setError(
-        "Lösenordet måste ha minst åtta tecken, en stor bokstav, " +
-          "en liten bokstav och en siffra.",
-      );
+      setError(t("register.errors.passwordRequirements"));
       return;
     }
 
@@ -152,7 +155,7 @@ export function Register() {
     try {
       const result = await register(payload);
 
-      // Skicka aldrig lösenordet till nästa sida eller webbläsarlagringen.
+      // Skicka aldrig lösenordet till nästa sida.
       navigate("/verify-email", {
         replace: true,
         state: {
@@ -173,7 +176,6 @@ export function Register() {
           data.code === "VerificationEmailFailed" &&
           data.requiresEmailVerification === true
         ) {
-          // Kontot finns redan. Låt användaren begära en ny kod.
           navigate("/verify-email", {
             replace: true,
             state: {
@@ -181,9 +183,7 @@ export function Register() {
                 typeof data.email === "string" && data.email.trim()
                   ? data.email
                   : payload.email,
-              message:
-                "Kontot har skapats, men mejlet kunde inte skickas. " +
-                "Vänta 60 sekunder och begär en ny kod.",
+              message: t("register.errors.verificationEmailFailed"),
               verificationEmailSent: false,
             },
           });
@@ -200,50 +200,57 @@ export function Register() {
   }
 
   const inputClass =
-    "w-full rounded-md border border-border bg-white px-3 py-2 " +
-    "text-[13px] outline-none focus:border-primary disabled:opacity-60";
+    "w-full min-w-0 min-h-11 rounded-md border border-border " +
+    "bg-white px-3 py-2 text-base outline-none " +
+    "focus:border-primary disabled:opacity-60";
 
   const labelClass =
-    "mb-1 block text-[12px] font-medium text-text-secondary";
+    "mb-1 block text-sm font-medium text-text-secondary";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher />
+        </div>
+
         <div className="mb-6 flex flex-col items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <CreditCard size={18} className="text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+            <CreditCard size={20} className="text-white" />
           </div>
 
-          <h1 className="text-lg font-semibold text-text-primary">
-            Skapa konto
+          <h1 className="text-xl font-semibold text-text-primary">
+            {t("register.title")}
           </h1>
 
-          <p className="text-center text-[13px] text-text-secondary">
-            Vi skickar en kod för att verifiera din e-postadress.
+          <p className="text-center text-sm text-text-secondary">
+            {t("register.subtitle")}
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
           aria-busy={isSubmitting}
-          className="rounded-xl border border-border bg-surface p-6 shadow-card"
+          className="rounded-xl border border-border bg-surface p-4 shadow-card sm:p-6"
         >
           {error && (
             <div
               role="alert"
-              className="mb-4 rounded-md border border-danger-soft bg-danger-soft px-3 py-2 text-[12px] text-danger"
+              className="mb-4 rounded-md border border-danger-soft bg-danger-soft px-3 py-2 text-sm text-danger"
             >
               {error}
             </div>
           )}
 
           <fieldset disabled={isSubmitting} className="min-w-0">
-            <legend className="sr-only">Dina kontouppgifter</legend>
+            <legend className="sr-only">
+              {t("register.accountDetails")}
+            </legend>
 
-            <div className="mb-4 grid grid-cols-2 gap-3">
-              <div>
+            <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="min-w-0">
                 <label htmlFor="firstName" className={labelClass}>
-                  Förnamn
+                  {t("register.firstName")}
                 </label>
                 <input
                   id="firstName"
@@ -259,9 +266,9 @@ export function Register() {
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <label htmlFor="lastName" className={labelClass}>
-                  Efternamn
+                  {t("register.lastName")}
                 </label>
                 <input
                   id="lastName"
@@ -280,7 +287,7 @@ export function Register() {
 
             <div className="mb-4">
               <label htmlFor="email" className={labelClass}>
-                E-post
+                {t("register.email")}
               </label>
               <input
                 id="email"
@@ -291,20 +298,23 @@ export function Register() {
                 spellCheck={false}
                 required
                 value={form.email}
-                onChange={(event) => update("email", event.target.value)}
+                onChange={(event) =>
+                  update("email", event.target.value)
+                }
                 className={inputClass}
               />
             </div>
 
             <div className="mb-4">
               <label htmlFor="phoneNumber" className={labelClass}>
-                Telefon  
+                {t("register.phone")}
               </label>
               <input
                 id="phoneNumber"
                 name="phoneNumber"
                 type="tel"
                 autoComplete="tel"
+                required
                 value={form.phoneNumber}
                 onChange={(event) =>
                   update("phoneNumber", event.target.value)
@@ -316,7 +326,7 @@ export function Register() {
 
             <div className="mb-4">
               <label htmlFor="password" className={labelClass}>
-                Lösenord
+                {t("register.password")}
               </label>
               <input
                 id="password"
@@ -334,16 +344,15 @@ export function Register() {
               />
               <p
                 id="password-help"
-                className="mt-1 text-[11px] text-text-secondary"
+                className="mt-1 text-xs text-text-secondary"
               >
-                Minst åtta tecken, en stor och en liten bokstav samt en
-                siffra.
+                {t("register.passwordHelp")}
               </p>
             </div>
 
             <div className="mb-5">
               <label htmlFor="confirmPassword" className={labelClass}>
-                Bekräfta lösenord
+                {t("register.confirmPassword")}
               </label>
               <input
                 id="confirmPassword"
@@ -363,28 +372,30 @@ export function Register() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-md bg-primary py-2 text-[13px] font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Skapar konto..." : "Skapa konto"}
+              {isSubmitting
+                ? t("register.creating")
+                : t("register.submit")}
             </button>
           </fieldset>
         </form>
 
-        <p className="mt-4 text-center text-[13px] text-text-secondary">
-          Har du redan ett konto?{" "}
+        <p className="mt-4 text-center text-sm text-text-secondary">
+          {t("register.alreadyAccount")}{" "}
           <Link to="/login" className="font-medium text-primary">
-            Logga in
+            {t("register.login")}
           </Link>
         </p>
 
-        <p className="mt-2 text-center text-[13px] text-text-secondary">
-          Behöver du verifiera ditt konto?{" "}
+        <p className="mt-2 text-center text-sm text-text-secondary">
+          {t("register.needVerification")}{" "}
           <Link
             to="/verify-email"
             state={{ email: form.email.trim() }}
             className="font-medium text-primary"
           >
-            Verifiera e-post
+            {t("register.verifyEmail")}
           </Link>
         </p>
       </div>

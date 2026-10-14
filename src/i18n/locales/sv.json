@@ -1,5 +1,4 @@
-
-  {
+{
   "common": {
     "save": "Spara",
     "cancel": "Avbryt",
@@ -58,15 +57,40 @@
     "monthlyCost": "Månadskostnad",
     "active": "Aktiva prenumerationer",
     "upcoming": "Kommande betalningar"
+  },
+  "register": {
+    "title": "Skapa konto",
+    "subtitle": "Vi skickar en kod för att verifiera din e-postadress.",
+    "accountDetails": "Dina kontouppgifter",
+    "firstName": "Förnamn",
+    "lastName": "Efternamn",
+    "email": "E-post",
+    "phone": "Telefonnummer",
+    "password": "Lösenord",
+    "confirmPassword": "Bekräfta lösenord",
+    "passwordHelp": "Minst åtta tecken, en versal, en gemen och en siffra.",
+    "creating": "Skapar konto...",
+    "submit": "Skapa konto",
+    "alreadyAccount": "Har du redan ett konto?",
+    "login": "Logga in",
+    "needVerification": "Behöver du verifiera ditt konto?",
+    "verifyEmail": "Verifiera e-post",
+    "errors": {
+      "nameRequired": "Ange både förnamn och efternamn.",
+      "phoneRequired": "Ange ditt telefonnummer.",
+      "passwordMismatch": "Lösenorden matchar inte.",
+      "passwordRequirements": "Lösenordet måste innehålla minst åtta tecken, en versal, en gemen och en siffra.",
+      "generic": "Registreringen kunde inte slutföras. Försök igen.",
+      "noResponse": "Vi fick inget svar från servern. Ditt konto kan ha skapats. Kontrollera din inkorg eller välj Verifiera e-post nedan.",
+      "tooManyRequests": "För många försök. Vänta en stund och försök igen.",
+      "duplicateEmail": "Den här e-postadressen används redan. Logga in eller verifiera din e-post via länken nedan.",
+      "passwordTooShort": "Lösenordet måste innehålla minst åtta tecken.",
+      "passwordRequiresDigit": "Lösenordet måste innehålla minst en siffra.",
+      "passwordRequiresUpper": "Lösenordet måste innehålla minst en versal.",
+      "passwordRequiresLower": "Lösenordet måste innehålla minst en gemen.",
+      "invalidEmail": "Ange en giltig e-postadress.",
+      "createFailed": "Kontot kunde inte skapas. Kontrollera dina uppgifter och försök igen.",
+      "verificationEmailFailed": "Ditt konto skapades, men e-postmeddelandet kunde inte skickas. Vänta 60 sekunder och begär en ny kod."
+    }
   }
 }
-
-
-
-
-
-
-
-
-
-

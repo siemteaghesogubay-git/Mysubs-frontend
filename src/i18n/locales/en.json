@@ -57,5 +57,40 @@
     "monthlyCost": "Monthly cost",
     "active": "Active subscriptions",
     "upcoming": "Upcoming payments"
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "We'll send you a code to verify your email address.",
+    "accountDetails": "Your account details",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone number",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordHelp": "At least eight characters, one uppercase letter, one lowercase letter and one number.",
+    "creating": "Creating account...",
+    "submit": "Create account",
+    "alreadyAccount": "Already have an account?",
+    "login": "Sign in",
+    "needVerification": "Need to verify your account?",
+    "verifyEmail": "Verify email",
+    "errors": {
+      "nameRequired": "Enter both your first and last name.",
+      "phoneRequired": "Enter your phone number.",
+      "passwordMismatch": "Passwords do not match.",
+      "passwordRequirements": "Password must contain at least eight characters, one uppercase letter, one lowercase letter and one number.",
+      "generic": "Could not complete registration. Please try again.",
+      "noResponse": "We did not receive a response from the server. Your account may have been created. Check your inbox or choose Verify email below.",
+      "tooManyRequests": "Too many attempts. Please wait and try again.",
+      "duplicateEmail": "This email address is already in use. Sign in or verify your email using the link below.",
+      "passwordTooShort": "Password must contain at least eight characters.",
+      "passwordRequiresDigit": "Password must contain at least one number.",
+      "passwordRequiresUpper": "Password must contain at least one uppercase letter.",
+      "passwordRequiresLower": "Password must contain at least one lowercase letter.",
+      "invalidEmail": "Enter a valid email address.",
+      "createFailed": "Could not create your account. Check your details and try again.",
+      "verificationEmailFailed": "Your account was created, but the email could not be sent. Wait 60 seconds and request a new code."
+    }
   }
 }
