@@ -63,8 +63,8 @@
     }
   },
   "dashboard": {
-    "title": "Overview",
     "perMonth": "per month",
+    "title": "Overview",
     "monthlyCost": "Monthly cost",
     "active": "Active subscriptions",
     "upcoming": "Upcoming payments",
@@ -119,6 +119,60 @@
       "invalidEmail": "Enter a valid email address.",
       "createFailed": "Could not create your account. Check your details and try again.",
       "verificationEmailFailed": "Your account was created, but the email could not be sent. Wait 60 seconds and request a new code."
+    }
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "add": "Add subscription",
+    "categoryRequired": "You must create at least one category before you can add a subscription.",
+    "search": "Search subscriptions...",
+    "searchLabel": "Search subscriptions",
+    "categoryFilter": "Filter by category",
+    "statusFilter": "Filter by status",
+    "sortLabel": "Sort subscriptions",
+    "allCategories": "All categories",
+    "all": "All",
+    "activePlural": "Active",
+    "cancelledPlural": "Cancelled",
+    "sortName": "Sort: Name (A–Z)",
+    "sortCost": "Sort: Cost (highest first)",
+    "sortStartDate": "Sort: Start date (newest first)",
+    "service": "Service",
+    "category": "Category",
+    "cost": "Cost",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "cancelled": "Cancelled {{date}}",
+    "perMonth": "Per month",
+    "perYear": "Per year",
+    "loading": "Loading subscriptions...",
+    "loadError": "Could not load subscriptions.",
+    "emptyTitle": "No subscriptions found",
+    "emptyFiltered": "Adjust your search or filters to see more results.",
+    "emptyFirst": "Add your first subscription to get started.",
+    "edit": "Edit {{name}}",
+    "delete": "Delete {{name}}",
+    "deleteConfirm": "Delete {{name}}?",
+    "deleteError": "Could not delete the subscription. Please try again."
+  },
+  "subscriptionModal": {
+    "addTitle": "Add subscription",
+    "editTitle": "Edit subscription",
+    "name": "Name",
+    "namePlaceholder": "e.g. Netflix",
+    "category": "Category",
+    "period": "Billing period",
+    "price": "Price (SEK)",
+    "startDate": "Start date",
+    "status": "Status",
+    "statusActive": "Active",
+    "statusCancelled": "Cancelled",
+    "cancelledDate": "Cancellation date",
+    "saving": "Saving...",
+    "errors": {
+      "validation": "Enter a name, a category and a valid cost.",
+      "saveFailed": "Could not save the subscription. Check the details and try again."
     }
   }
 }
